@@ -1,0 +1,13 @@
+com\example\support\controller\TicketController.class
+com\example\support\entity\User.class
+com\example\support\controller\UserController.class
+com\example\support\repository\TicketRepository.class
+com\example\support\repository\UserRepository.class
+com\example\support\controller\SlaController.class
+com\example\support\SupportApplication.class
+com\example\support\controller\AgentController.class
+com\example\support\repository\AgentRepository.class
+com\example\support\repository\SlaRepository.class
+com\example\support\entity\Agent.class
+com\example\support\entity\Sla.class
+com\example\support\entity\Ticket.class
