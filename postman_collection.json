@@ -1,0 +1,720 @@
+{
+  "info": {
+    "_postman_id": "support-system-api-tests",
+    "name": "Support System API",
+    "description": "Полная коллекция для тестирования системы поддержки",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Users API",
+      "item": [
+        {
+          "name": "POST - Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Иван Иванов\",\n  \"email\": \"ivan@example.com\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users"]
+            },
+            "description": "Создание нового пользователя"
+          },
+          "response": []
+        },
+        {
+          "name": "GET - All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users"]
+            },
+            "description": "Получение всех пользователей"
+          },
+          "response": []
+        },
+        {
+          "name": "GET - User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users", "1"]
+            },
+            "description": "Получение пользователя по ID"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT - Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Иван Петров (обновленный)\",\n  \"email\": \"ivan.updated@example.com\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users", "1"]
+            },
+            "description": "Обновление данных пользователя"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE - User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users", "1"]
+            },
+            "description": "Удаление пользователя"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Agents API",
+      "item": [
+        {
+          "name": "POST - Create Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Алексей Агентов\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/agents",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["agents"]
+            },
+            "description": "Создание нового агента поддержки"
+          },
+          "response": []
+        },
+        {
+          "name": "GET - All Agents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/agents",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["agents"]
+            },
+            "description": "Получение всех агентов"
+          },
+          "response": []
+        },
+        {
+          "name": "GET - Agent by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/agents/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["agents", "1"]
+            },
+            "description": "Получение агента по ID"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT - Update Agent",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Алексей Старший Агентов\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/agents/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["agents", "1"]
+            },
+            "description": "Обновление данных агента"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE - Agent",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/agents/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["agents", "1"]
+            },
+            "description": "Удаление агента"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "SLAs API",
+      "item": [
+        {
+          "name": "POST - Create SLA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reactionDeadlineHours\": 4,\n  \"resolutionDeadlineHours\": 24\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/slas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["slas"]
+            },
+            "description": "Создание нового SLA (Service Level Agreement)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET - All SLAs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/slas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["slas"]
+            },
+            "description": "Получение всех SLA"
+          },
+          "response": []
+        },
+        {
+          "name": "GET - SLA by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/slas/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["slas", "1"]
+            },
+            "description": "Получение SLA по ID"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT - Update SLA",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reactionDeadlineHours\": 2,\n  \"resolutionDeadlineHours\": 12\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/slas/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["slas", "1"]
+            },
+            "description": "Обновление данных SLA"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE - SLA",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/slas/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["slas", "1"]
+            },
+            "description": "Удаление SLA"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tickets API",
+      "item": [
+        {
+          "name": "POST - Create Ticket (Basic)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Проблема с доступом\",\n  \"description\": \"Не могу войти в систему\",\n  \"status\": \"Open\",\n  \"solution\": null\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/tickets",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["tickets"]
+            },
+            "description": "Создание тикета без связей"
+          },
+          "response": []
+        },
+        {
+          "name": "POST - Create Full Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Критическая ошибка в отчетах\",\n  \"description\": \"Отчеты не генерируются уже 2 дня\",\n  \"status\": \"In Progress\",\n  \"solution\": null,\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Иван Иванов\",\n    \"email\": \"ivan@example.com\"\n  },\n  \"agent\": {\n    \"id\": 1,\n    \"name\": \"Алексей Агентов\"\n  },\n  \"sla\": {\n    \"id\": 1,\n    \"reactionDeadlineHours\": 4,\n    \"resolutionDeadlineHours\": 24\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/tickets",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["tickets"]
+            },
+            "description": "Создание полного тикета со всеми связями (требует существующих ID)"
+          },
+          "response": []
+        },
+        {
+          "name": "POST - Create Ticket with IDs only",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Медленная работа системы\",\n  \"description\": \"Сервер отвечает очень медленно\",\n  \"status\": \"Open\",\n  \"user\": {\n    \"id\": 1\n  },\n  \"agent\": {\n    \"id\": 1\n  },\n  \"sla\": {\n    \"id\": 1\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/tickets",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["tickets"]
+            },
+            "description": "Создание тикета с указанием только ID связанных сущностей"
+          },
+          "response": []
+        },
+        {
+          "name": "GET - All Tickets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/tickets",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["tickets"]
+            },
+            "description": "Получение всех тикетов"
+          },
+          "response": []
+        },
+        {
+          "name": "GET - Ticket by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/tickets/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["tickets", "1"]
+            },
+            "description": "Получение тикета по ID"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT - Update Ticket",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Проблема с доступом (обновлено)\",\n  \"description\": \"Не могу войти в систему - требуется сброс пароля\",\n  \"status\": \"Closed\",\n  \"solution\": \"Пароль был сброшен и отправлен на email\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/tickets/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["tickets", "1"]
+            },
+            "description": "Обновление данных тикета"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT - Close Ticket",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Closed\",\n  \"solution\": \"Проблема решена путем обновления конфигурации сервера\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/tickets/2",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["tickets", "2"]
+            },
+            "description": "Закрытие тикета с указанием решения"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE - Ticket",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/tickets/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["tickets", "1"]
+            },
+            "description": "Удаление тикета"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Business Operations",
+      "item": [
+        {
+          "name": "Operation 1: Create Ticket with Agent Assignment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Проблема с принтером\",\n  \"description\": \"Принтер не печатает\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/tickets/create-with-agent/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "tickets", "create-with-agent", "1"]
+            },
+            "description": "Операция 1: Создание тикета с автоматическим назначением агента и SLA"
+          },
+          "response": []
+        },
+        {
+          "name": "Operation 2: Reassign Ticket",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/tickets/1/reassign/2?reason=Агент+в+отпуске",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "tickets", "1", "reassign", "2"],
+              "query": [
+                {
+                  "key": "reason",
+                  "value": "Агент в отпуске"
+                }
+              ]
+            },
+            "description": "Операция 2: Передача тикета другому агенту"
+          },
+          "response": []
+        },
+        {
+          "name": "Operation 3: Escalate Ticket",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/tickets/1/escalate?reason=Критическая+проблема+для+бизнеса",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "tickets", "1", "escalate"],
+              "query": [
+                {
+                  "key": "reason",
+                  "value": "Критическая проблема для бизнеса"
+                }
+              ]
+            },
+            "description": "Операция 3: Эскалация тикета (повышение приоритета)"
+          },
+          "response": []
+        },
+        {
+          "name": "Operation 4: Close Ticket with Solution",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/tickets/1/close?solution=Перезагрузили+сервер&agentId=1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "tickets", "1", "close"],
+              "query": [
+                {
+                  "key": "solution",
+                  "value": "Перезагрузили сервер"
+                },
+                {
+                  "key": "agentId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Операция 4: Закрытие тикета с фиксацией решения"
+          },
+          "response": []
+        },
+        {
+          "name": "Operation 5: Batch Update SLA",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/tickets/batch-update-sla?daysOld=3&slaId=1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "tickets", "batch-update-sla"],
+              "query": [
+                {
+                  "key": "daysOld",
+                  "value": "3"
+                },
+                {
+                  "key": "slaId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Операция 5: Пакетное обновление SLA для старых тикетов"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Test Scenarios",
+      "item": [
+        {
+          "name": "Scenario 1: Полный цикл работы",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Тестовый Пользователь\",\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["users"]
+            },
+            "description": "1. Создать пользователя\n2. Создать агента\n3. Создать SLA\n4. Создать тикет\n5. Обновить тикет\n6. Закрыть тикет"
+          },
+          "response": []
+        },
+        {
+          "name": "Scenario 2: Быстрое создание тикета",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Срочная проблема\",\n  \"description\": \"Система полностью недоступна\",\n  \"status\": \"Open\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/tickets",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["tickets"]
+            },
+            "description": "Минимальные данные для создания тикета"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    }
+  ]
+}
