@@ -1,6 +1,7 @@
 package com.example.support.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "ticket")
@@ -16,106 +17,111 @@ public class Ticket {
     private String description;
 
     @Column(nullable = false)
-    private String status; // "Open", "In Progress", "Closed"
+    private String status = "Open";
 
     @Column(columnDefinition = "TEXT")
-    private String solution; // решение при закрытии
+    private String solution;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "agent_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Agent agent;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sla_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Sla sla;
 
-    // Конструктор по умолчанию (как в похожем проекте)
+    // КОНСТРУКТОРЫ
     public Ticket() {
+        // Пустой конструктор для JPA
     }
 
-    // Конструктор с основными параметрами (как в Ride.java похожего проекта)
-    public Ticket(String title, String description, String status, User user) {
+    // Конструктор для TicketService
+    public Ticket(String title, String description, User user) {
         this.title = title;
         this.description = description;
-        this.status = status;
         this.user = user;
+        this.status = "Open";
     }
 
-    // Полный конструктор (опционально)
+    // ВАЖНО: Полный конструктор с 6 параметрами (для обратной совместимости)
     public Ticket(String title, String description, String status, String solution,
                   User user, Agent agent, Sla sla) {
         this.title = title;
         this.description = description;
-        this.status = status;
+        this.status = status != null ? status : "Open";
         this.solution = solution;
         this.user = user;
         this.agent = agent;
         this.sla = sla;
     }
 
-    // Геттеры и сеттеры (как в похожем проекте)
+    // --- ГЕТТЕРЫ (ОБЯЗАТЕЛЬНО!) ---
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getDescription() {
         return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String getSolution() {
         return solution;
-    }
-
-    public void setSolution(String solution) {
-        this.solution = solution;
     }
 
     public User getUser() {
         return user;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     public Agent getAgent() {
         return agent;
     }
 
-    public void setAgent(Agent agent) {
-        this.agent = agent;
-    }
-
     public Sla getSla() {
         return sla;
+    }
+
+    // --- СЕТТЕРЫ (ОБЯЗАТЕЛЬНО!) ---
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setSolution(String solution) {
+        this.solution = solution;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setAgent(Agent agent) {
+        this.agent = agent;
     }
 
     public void setSla(Sla sla) {

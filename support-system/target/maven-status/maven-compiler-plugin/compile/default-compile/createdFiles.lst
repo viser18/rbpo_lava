@@ -1,5 +1,6 @@
 com\example\support\service\TicketResolutionService.class
 com\example\support\service\SlaService.class
+com\example\support\service\CustomUserDetailsService.class
 com\example\support\controller\TicketController.class
 com\example\support\entity\User.class
 com\example\support\controller\TicketOperationsController.class
@@ -14,6 +15,9 @@ com\example\support\controller\AgentController.class
 com\example\support\repository\AgentRepository.class
 com\example\support\repository\SlaRepository.class
 com\example\support\service\BatchTicketService.class
+com\example\support\config\SecurityConfig.class
 com\example\support\entity\Agent.class
 com\example\support\entity\Sla.class
+com\example\support\controller\AuthController$RegistrationRequest.class
+com\example\support\controller\AuthController.class
 com\example\support\entity\Ticket.class

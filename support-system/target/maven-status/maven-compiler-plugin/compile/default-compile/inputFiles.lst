@@ -4,7 +4,9 @@ C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\suppo
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\SlaController.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\service\BatchTicketService.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\AgentController.java
+C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\config\SecurityConfig.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\TicketController.java
+C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\service\CustomUserDetailsService.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\repository\UserRepository.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\entity\User.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\service\TicketResolutionService.java
@@ -12,6 +14,7 @@ C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\suppo
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\TicketOperationsController.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\repository\AgentRepository.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\service\AgentService.java
+C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\AuthController.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\service\TicketService.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\SupportApplication.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\UserController.java

@@ -28,7 +28,7 @@ public class TicketService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
-        // ИСПРАВЛЕННЫЙ КОД
+        // ИСПРАВЛЕННАЯ СТРОКА - используем конструктор с 3 параметрами
         List<Agent> agents = agentRepository.findAll();
         if (agents.isEmpty()) {
             throw new RuntimeException("Нет доступных агентов");
@@ -43,9 +43,11 @@ public class TicketService {
             sla = slas.get(0);
         }
 
-        Ticket ticket = new Ticket(title, description, "Open", user);
+        // ИСПРАВЛЕНИЕ ЗДЕСЬ: используем конструктор с 3 параметрами
+        Ticket ticket = new Ticket(title, description, user);
         ticket.setAgent(agent);
         ticket.setSla(sla);
+        // status уже установлен в конструкторе как "Open"
 
         return ticketRepository.save(ticket);
     }

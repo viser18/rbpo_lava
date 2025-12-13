@@ -4,6 +4,7 @@ import com.example.support.entity.User;
 import com.example.support.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,12 +17,25 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
         try {
+            // Кодируем пароль перед сохранением
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
+            // Устанавливаем роль по умолчанию если не указана
+            if (user.getRole() == null || user.getRole().isEmpty()) {
+                user.setRole("ROLE_USER");
+            }
+
             User savedUser = userRepository.save(user);
             return ResponseEntity.ok(savedUser);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -42,8 +56,18 @@ public class UserController {
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
         return userRepository.findById(id)
                 .map(existingUser -> {
-                    existingUser.setName(userDetails.getName());
-                    existingUser.setEmail(userDetails.getEmail());
+                    if (userDetails.getName() != null) {
+                        existingUser.setName(userDetails.getName());
+                    }
+                    if (userDetails.getEmail() != null) {
+                        existingUser.setEmail(userDetails.getEmail());
+                    }
+                    if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
+                        existingUser.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+                    }
+                    if (userDetails.getRole() != null) {
+                        existingUser.setRole(userDetails.getRole());
+                    }
                     User updatedUser = userRepository.save(existingUser);
                     return ResponseEntity.ok(updatedUser);
                 })
