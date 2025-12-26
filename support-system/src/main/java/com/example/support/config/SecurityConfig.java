@@ -2,6 +2,7 @@ package com.example.support.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,59 +19,67 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Настраиваем CSRF токены для использования в куках
+        // Упрощенная настройка CSRF для Postman тестирования
         CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        tokenRepository.setCookiePath("/");
+        tokenRepository.setCookieName("XSRF-TOKEN");
+        tokenRepository.setHeaderName("X-XSRF-TOKEN");
+        tokenRepository.setCookieMaxAge(86400);
+
+        // Новый обработчик для Spring Security 6+
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName("_csrf");
 
         http
-                // Настройка CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // Настройка CSRF
+                // Настраиваем сессии
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionFixation().migrateSession()
+                )
+
+                // ВАЖНО: Настраиваем CSRF для тестирования
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(tokenRepository)
                         .csrfTokenRequestHandler(requestHandler)
+                        // Разрешаем POST без CSRF для отладки (можно убрать позже)
                         .ignoringRequestMatchers(
-                                "/api/auth/**",        // Отключаем CSRF для публичных эндпоинтов
-                                "/h2-console/**"      // Отключаем для H2 консоли (если используется)
+                                "/api/auth/**",
+                                "/error",
+                                "/h2-console/**",
+                                "/tickets/test"  // Для тестирования
                         )
                 )
 
-                // Настройка авторизации
                 .authorizeHttpRequests(auth -> auth
-                        // ПУБЛИЧНЫЕ эндпоинты (доступны всем)
+                        // Публичные эндпоинты
                         .requestMatchers(
                                 "/api/auth/**",
+                                "/api/csrf/info",
                                 "/error",
                                 "/favicon.ico",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/tickets/test"
                         ).permitAll()
 
-                        // Эндпоинты статистики доступны админам и агентам
+                        .requestMatchers("/api/csrf/**").authenticated()
                         .requestMatchers("/api/stats/**").hasAnyRole("ADMIN", "AGENT")
-
-                        // ЗАЩИЩЕННЫЕ эндпоинты
                         .requestMatchers("/users/**").hasRole("ADMIN")
                         .requestMatchers("/agents/**").hasRole("ADMIN")
                         .requestMatchers("/slas/**").hasRole("ADMIN")
                         .requestMatchers("/tickets/**").hasAnyRole("USER", "ADMIN", "AGENT")
                         .requestMatchers("/api/tickets/**").hasAnyRole("AGENT", "ADMIN")
 
-                        // Все остальные требуют любой аутентификации
                         .anyRequest().authenticated()
                 )
-                .httpBasic(httpBasic -> {})
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
 
-        // Для H2 консоли (если используется)
-        http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+                .httpBasic(httpBasic -> {})
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
     }
@@ -78,19 +87,18 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",  // React app
-                "http://localhost:8080"   // Само приложение
-        ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With",
-                "X-CSRF-TOKEN",
-                "Accept"
-        ));
+
+        // Разрешаем все для тестирования (в production ограничьте)
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(Arrays.asList(
+                "Authorization",
+                "X-XSRF-TOKEN",
+                "Set-Cookie"
+        ));
+
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -100,6 +108,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 }
