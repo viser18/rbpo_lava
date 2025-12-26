@@ -14,6 +14,7 @@ com\example\support\service\TicketStatsService.class
 com\example\support\controller\CsrfController.class
 com\example\support\config\JwtAuthenticationFilter.class
 com\example\support\repository\SlaRepository.class
+com\example\support\config\HttpsConfig.class
 com\example\support\entity\Sla.class
 com\example\support\controller\AuthController$RegistrationRequest.class
 com\example\support\controller\AuthController.class
@@ -24,6 +25,7 @@ com\example\support\entity\User.class
 com\example\support\config\JwtTokenProvider.class
 com\example\support\repository\UserRepository.class
 com\example\support\SupportApplication.class
+com\example\support\config\HttpsConfig$1.class
 com\example\support\controller\AuthController$RefreshRequest.class
 com\example\support\entity\SessionStatus.class
 com\example\support\repository\AgentRepository.class

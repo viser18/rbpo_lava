@@ -1,6 +1,7 @@
 package com.example.support.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,14 +30,22 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Value("${server.port:8443}")
+    private int serverPort;
+
+    @Value("${server.http.port:8080}")
+    private int httpPort;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Упрощенная настройка CSRF для Postman тестирования
+        // Настройка CSRF с безопасными cookies для HTTPS
         CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         tokenRepository.setCookiePath("/");
         tokenRepository.setCookieName("XSRF-TOKEN");
         tokenRepository.setHeaderName("X-XSRF-TOKEN");
         tokenRepository.setCookieMaxAge(86400);
+        tokenRepository.setSecure(true); // Только для HTTPS
+        tokenRepository.setCookieHttpOnly(false); // Для доступа из JS
 
         // Новый обработчик для Spring Security 6+
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
@@ -46,22 +55,23 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // Настраиваем сессии как STATELESS для JWT
-                // Но оставляем возможность CSRF для некоторых эндпоинтов
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                         .sessionFixation().migrateSession()
                 )
 
-                // ВАЖНО: Настраиваем CSRF для тестирования
+                // Настройка CSRF с безопасными параметрами для HTTPS
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(tokenRepository)
                         .csrfTokenRequestHandler(requestHandler)
-                        // Разрешаем POST без CSRF для отладки (можно убрать позже)
+                        // Разрешаем POST без CSRF для эндпоинтов аутентификации и WebSocket
                         .ignoringRequestMatchers(
-                                "/api/auth/**",     // Эндпоинты аутентификации
-                                "/error",           // Эндпоинты ошибок
-                                "/h2-console/**",   // H2 консоль
-                                "/tickets/test"     // Для тестирования
+                                "/api/auth/**",         // Эндпоинты аутентификации
+                                "/error",               // Эндпоинты ошибок
+                                "/h2-console/**",       // H2 консоль (только для разработки)
+                                "/tickets/test",        // Тестовый эндпоинт
+                                "/ws/**",              // WebSocket
+                                "/actuator/**"         // Actuator endpoints
                         )
                 )
 
@@ -73,11 +83,22 @@ public class SecurityConfig {
                                 "/error",               // Ошибки
                                 "/favicon.ico",         // Favicon
                                 "/tickets/test",        // Тестовый эндпоинт
-                                "/h2-console/**"        // H2 консоль (для разработки)
+                                "/h2-console/**",       // H2 консоль (для разработки)
+                                "/actuator/health",     // Health check
+                                "/actuator/info",       // Application info
+                                "/swagger-ui/**",       // Swagger UI
+                                "/v3/api-docs/**",      // OpenAPI docs
+                                "/swagger-resources/**" // Swagger resources
                         ).permitAll()
 
                         // Эндпоинты с CSRF (требуют аутентификации + CSRF токен)
                         .requestMatchers("/api/csrf/**").authenticated()
+
+                        // WebSocket эндпоинты (требуют аутентификации)
+                        .requestMatchers("/ws/**").authenticated()
+
+                        // Actuator эндпоинты (только для админов)
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
 
                         // Статистика (только для админов и агентов)
                         .requestMatchers("/api/stats/**").hasAnyRole("ADMIN", "AGENT")
@@ -104,12 +125,22 @@ public class SecurityConfig {
                 // Добавляем JWT фильтр перед UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
-                // Оставляем Basic Auth для обратной совместимости и тестирования
+                // Отключаем Basic Auth для production, оставляем для тестирования
                 .httpBasic(httpBasic -> {})
 
-                // Отключаем frameOptions для H2 консоли
+                // Настройка заголовков безопасности для HTTPS
                 .headers(headers -> headers
-                        .frameOptions(frame -> frame.disable())
+                        .frameOptions(frame -> frame.sameOrigin()) // Разрешаем фреймы с того же origin
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';")
+                        )
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .preload(true)
+                                .maxAgeInSeconds(31536000)
+                        )
+                        // Убираем проблемную XSS защиту или используем совместимый метод
+                        .xssProtection(xss -> {})
                 );
 
         return http.build();
@@ -124,14 +155,18 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Разрешаем все для тестирования (в production ограничьте конкретными доменами)
+        // Разрешенные origins для HTTPS и HTTP (для разработки)
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",
-                "http://localhost:8080",
-                "http://127.0.0.1:3000",
-                "http://127.0.0.1:8080",
-                "http://localhost:5173",  // Vite dev server
-                "http://127.0.0.1:5173"
+                "https://localhost:" + serverPort,
+                "https://localhost:3000",
+                "https://127.0.0.1:" + serverPort,
+                "https://127.0.0.1:3000",
+                "http://localhost:" + httpPort,         // HTTP редирект порт
+                "http://localhost:3000",               // Dev frontend
+                "http://127.0.0.1:" + httpPort,        // HTTP редирект порт
+                "http://127.0.0.1:3000",               // Dev frontend
+                "http://localhost:5173",               // Vite dev server
+                "http://127.0.0.1:5173"                // Vite dev server
         ));
 
         configuration.setAllowedMethods(Arrays.asList(
@@ -146,13 +181,20 @@ public class SecurityConfig {
                 "Accept",
                 "Origin",
                 "Cache-Control",
-                "Pragma"
+                "Pragma",
+                "Upgrade",
+                "Connection",
+                "Sec-WebSocket-Key",
+                "Sec-WebSocket-Version",
+                "Sec-WebSocket-Extensions"
         ));
 
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "X-XSRF-TOKEN",
-                "Set-Cookie"
+                "Set-Cookie",
+                "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Credentials"
         ));
 
         configuration.setAllowCredentials(true);
