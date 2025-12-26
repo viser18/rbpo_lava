@@ -80,28 +80,37 @@ public class AuthService {
     }
 
     public Map<String, Object> refreshTokens(String refreshToken, HttpServletRequest request) {
-        // Проверяем структуру токена
+        System.out.println("=== REFRESH TOKEN PROCESS ===");
+        System.out.println("Refresh token received: " + refreshToken);
+
+        // Вначале проверяем структуру токена
         if (!jwtTokenProvider.validateTokenStructure(refreshToken)) {
+            System.err.println("Invalid refresh token structure");
             throw new RuntimeException("Invalid refresh token structure");
         }
 
         // Проверяем что это refresh токен
-        String tokenType = jwtTokenProvider.getTokenType(refreshToken);
-        if (!"REFRESH".equals(tokenType)) {
-            throw new RuntimeException("Invalid token type. Expected REFRESH");
+        if (!jwtTokenProvider.isRefreshToken(refreshToken)) {
+            System.err.println("Token is not a refresh token");
+            throw new RuntimeException("Invalid token type. Expected REFRESH token");
         }
 
         // Находим сессию по refresh токену
         UserSession session = userSessionRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("Session not found"));
+                .orElseThrow(() -> {
+                    System.err.println("Session not found for refresh token");
+                    return new RuntimeException("Session not found");
+                });
 
         // Проверяем статус сессии
         if (session.getStatus() != SessionStatus.ACTIVE) {
+            System.err.println("Session is not active. Status: " + session.getStatus());
             throw new RuntimeException("Session is not active. Status: " + session.getStatus());
         }
 
         // Проверяем не истек ли токен
         if (jwtTokenProvider.isTokenExpired(refreshToken)) {
+            System.err.println("Refresh token expired");
             session.setStatus(SessionStatus.EXPIRED);
             userSessionRepository.save(session);
             throw new RuntimeException("Refresh token expired");
@@ -115,8 +124,16 @@ public class AuthService {
         String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
 
+        System.out.println("New access token generated: " + newAccessToken.substring(0, 30) + "...");
+        System.out.println("New refresh token generated: " + newRefreshToken.substring(0, 30) + "...");
+
         // Обновляем сессию
         LocalDateTime newExpiresAt = jwtTokenProvider.getExpirationLocalDateTime(newRefreshToken);
+
+        // Сохраняем старый токен в историю (опционально)
+        System.out.println("Old refresh token: " + session.getRefreshToken().substring(0, 30) + "...");
+
+        // Обновляем сессию новым токеном
         session.setRefreshToken(newRefreshToken);
         session.setExpiresAt(newExpiresAt);
         session.setLastRefreshedAt(LocalDateTime.now());
@@ -125,6 +142,7 @@ public class AuthService {
         session.setUserAgent(request.getHeader("User-Agent"));
 
         userSessionRepository.save(session);
+        System.out.println("Session updated with new refresh token");
 
         // Формируем ответ
         Map<String, Object> response = new HashMap<>();
@@ -139,7 +157,9 @@ public class AuthService {
                 "role", user.getRole()
         ));
         response.put("sessionId", session.getId());
+        response.put("message", "Tokens refreshed successfully");
 
+        System.out.println("=== REFRESH COMPLETE ===");
         return response;
     }
 
