@@ -1,4 +1,4 @@
-﻿name: CI/CD Pipeline
+﻿name: Java CI/CD Pipeline
 
 on:
   push:
@@ -11,51 +11,126 @@ env:
   STUDENT_ID: ${{ secrets.STUDENT_ID }}
 
 jobs:
-  build-and-test:
+  # Этап 1: Компиляция
+  compile:
+    name: Compile Project
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
+          cache: 'maven'
 
-      - name: Generate Test Certificates
-        run: |
-          mkdir -p src/test/resources/keystore
-          # Генерация тестового самоподписанного сертификата
-          keytool -genkeypair -alias test -keyalg RSA -keysize 2048 -validity 365 \
-            -keystore src/test/resources/keystore/test.p12 -storepass ChangeMe123! \
-            -keypass ChangeMe123! -dname "CN=test" -storetype PKCS12
-          echo "Test certificate generated"
-
-      - name: Build with Maven
+      - name: Compile with Maven
         run: mvn clean compile -DskipTests
+        env:
+          KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
 
-      - name: Run Tests
-        run: mvn test
+  # Этап 2: Тестирование (зависит от успешной компиляции)
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: compile
 
-      - name: Generate OpenAPI Documentation
-        run: |
-          mvn spring-boot:run -Dspring-boot.run.arguments="--spring.main.web-application-type=NONE" -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=ci" &
-          sleep 30
-          curl -s http://localhost:8080/v3/api-docs > openapi.json
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Upload OpenAPI Docs
-        uses: actions/upload-artifact@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          name: openapi-docs
-          path: openapi.json
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Prepare Keystore for Tests
+        run: |
+          # Создаем директорию для keystore
+          mkdir -p src/main/resources/keystore
+          # Копируем или создаем тестовый keystore
+          if [ -f "certificates_student_1БИБ23251/student_1БИБ23251_server.pfx" ]; then
+            cp certificates_student_1БИБ23251/student_1БИБ23251_server.pfx src/main/resources/keystore/server.pfx
+            echo "Production keystore copied"
+          else
+            # Генерация тестового keystore если production нет
+            keytool -genkeypair -alias testserver -keyalg RSA -keysize 2048 \
+              -validity 365 -keystore src/main/resources/keystore/server.pfx \
+              -storepass $KEYSTORE_PASSWORD -keypass $KEYSTORE_PASSWORD \
+              -dname "CN=localhost" -storetype PKCS12
+            echo "Test keystore generated"
+          fi
+
+      - name: Run Unit Tests
+        run: mvn test
+        env:
+          KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
+
+  # Этап 3: Сборка и упаковка (только для main/master веток)
+  package:
+    name: Build and Package
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Prepare Production Keystore
+        run: |
+          mkdir -p src/main/resources/keystore
+          cp certificates_student_1БИБ23251/student_1БИБ23251_server.pfx src/main/resources/keystore/server.pfx
+          echo "Production keystore prepared"
 
       - name: Build Package
         run: mvn clean package -DskipTests
+        env:
+          KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+      - name: Get Version
+        id: get-version
+        run: |
+          VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Package version: $VERSION"
+
+      - name: Upload JAR Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: support-system-jar
+          name: application-jar
           path: target/*.jar
+          retention-days: 7
+
+  # Этап 4: Создание релиза (опционально, для финальных версий)
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: package
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download JAR Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: application-jar
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.jar"
+          tag_name: "v${{ needs.package.outputs.version }}"
+          name: "Release v${{ needs.package.outputs.version }}"
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
