@@ -1,0 +1,3 @@
+com\example\support\CiPipelineTest.class
+com\example\support\GuaranteedTest.class
+com\example\support\service\CertificateServiceTest.class
