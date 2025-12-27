@@ -1,0 +1,10 @@
+name: Quick Test CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print success
+        run: echo "CI is working!"
