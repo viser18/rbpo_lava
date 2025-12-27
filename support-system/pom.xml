@@ -85,26 +85,6 @@
             <version>0.12.3</version>
             <scope>runtime</scope>
         </dependency>
-        <!-- В секцию <dependencies> добавьте: -->
-
-        <!-- SpringDoc OpenAPI для Swagger -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-
-        <!-- Actuator для мониторинга -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
-        <!-- WebSocket поддержка (если нужно) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
     </dependencies>
 
     <properties>

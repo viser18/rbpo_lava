@@ -10,13 +10,11 @@ C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\suppo
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\TicketOperationsController.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\repository\AgentRepository.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\service\TicketStatsService.java
-C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\config\HttpsConfig.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\UserController.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\StatsController.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\repository\SlaRepository.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\config\JwtAuthenticationFilter.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\repository\TicketRepository.java
-C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\CsrfController.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\service\SlaService.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\controller\SlaController.java
 C:\Users\Владелец\Desktop\support-system\src\main\java\com\example\support\entity\SessionStatus.java
