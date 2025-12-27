@@ -20,7 +20,7 @@ import java.util.function.Function;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret:mySecretKeyForJWTTokenGenerationWithAtLeast256Bits}")
+    @Value("${JWT_SECRET}")
     private String secret;
 
     @Value("${jwt.access.expiration:900}") // 15 минут
@@ -35,7 +35,7 @@ public class JwtTokenProvider {
     public void init() {
         // Убедимся что секрет достаточно длинный (минимум 256 бит = 32 байта)
         if (secret.length() < 32) {
-            String base = "mySuperSecretKeyForJWTWithAtLeast256BitsLengthHere";
+            String base = "${JWT_SECRET}";
             while (secret.length() < 32) {
                 secret = secret + base;
             }
