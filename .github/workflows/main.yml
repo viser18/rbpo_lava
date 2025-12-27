@@ -1,10 +1,211 @@
-name: Quick Test CI
-on: [push, pull_request]
+name: Java CI with Maven
+
+on:
+  # Запуск при пуше в основные ветки
+  push:
+    branches: [ main, master ]
+  
+  # Запуск при создании pull request
+  pull_request:
+    branches: [ main, master ]
+  
+  # Ручной запуск из вкладки Actions
+  workflow_dispatch:
+
+env:
+  # Используем GitHub Secrets для конфиденциальных данных
+  KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+  STUDENT_ID: ${{ secrets.STUDENT_ID }}
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  # 1. КОМПИЛЯЦИЯ И ТЕСТИРОВАНИЕ
+  compile-and-test:
+    runs-on: ubuntu-latest  # GitHub предоставляет виртуальную машину с Ubuntu
+    
     steps:
-      - uses: actions/checkout@v4
-      - name: Print success
-        run: echo "CI is working!"
+    # Шаг 1: Получить код из репозитория
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    # Шаг 2: Установить Java 17
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'  # Eclipse Temurin (AdoptOpenJDK)
+        cache: 'maven'  # Кэширование Maven зависимостей
+    
+    # Шаг 3: Проверить структуру проекта
+    - name: Verify project structure
+      run: |
+        echo "📁 Project structure:"
+        find . -name "*.java" -type f | head -10
+        echo "POM exists: $(test -f pom.xml && echo '✅' || echo '❌')"
+    
+    # Шаг 4: Компиляция проекта
+    - name: Compile project
+      run: mvn clean compile -q
+      env:
+        KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
+        STUDENT_ID: ${{ env.STUDENT_ID }}
+    
+    # Шаг 5: Создать тестовый keystore для CI
+    - name: Generate test keystore
+      run: |
+        mkdir -p src/test/resources/keystore
+        # Генерация тестового сертификата
+        keytool -genkeypair \
+          -alias test-cert \
+          -keyalg RSA \
+          -keysize 2048 \
+          -validity 365 \
+          -keystore src/test/resources/keystore/test.p12 \
+          -storepass "$KEYSTORE_PASSWORD" \
+          -keypass "$KEYSTORE_PASSWORD" \
+          -dname "CN=CI Test, OU=Support System, O=University, L=Moscow, C=RU" \
+          -storetype PKCS12
+        
+        echo "✅ Test keystore generated"
+        keytool -list -keystore src/test/resources/keystore/test.p12 \
+          -storepass "$KEYSTORE_PASSWORD" | grep "test-cert"
+    
+    # Шаг 6: Запустить тесты
+    - name: Run tests
+      run: mvn test -B  # -B для non-interactive mode
+      env:
+        KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
+        STUDENT_ID: ${{ env.STUDENT_ID }}
+    
+    # Шаг 7: Генерация отчета о тестах
+    - name: Test report
+      if: always()  # Выполнять всегда, даже если тесты упали
+      run: |
+        echo "📊 TEST SUMMARY" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -d "target/surefire-reports" ]; then
+          TOTAL=0
+          PASSED=0
+          FAILED=0
+          
+          for report in target/surefire-reports/*.xml; do
+            if [ -f "$report" ]; then
+              TESTS=$(grep -o 'tests="[0-9]*"' "$report" | grep -o '[0-9]*' || echo "0")
+              ERRORS=$(grep -o 'errors="[0-9]*"' "$report" | grep -o '[0-9]*' || echo "0")
+              FAILURES=$(grep -o 'failures="[0-9]*"' "$report" | grep -o '[0-9]*' || echo "0")
+              
+              TOTAL=$((TOTAL + TESTS))
+              FAILED=$((FAILED + ERRORS + FAILURES))
+            fi
+          done
+          
+          PASSED=$((TOTAL - FAILED))
+          
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Tests | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+          echo "| ✅ Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "| ❌ Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "No test reports found" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  # 2. УПАКОВКА И СОЗДАНИЕ АРТЕФАКТА
+  package-and-release:
+    runs-on: ubuntu-latest
+    needs: compile-and-test  # Зависит от успешного выполнения тестов
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    # Шаг 1: Загрузить реальный keystore из Secrets (если есть)
+    - name: Load production keystore
+      run: |
+        mkdir -p src/main/resources/keystore
+        
+        if [ -n "${{ secrets.KEYSTORE_FILE_BASE64 }}" ]; then
+          # Декодируем Base64 строку из секрета
+          echo "${{ secrets.KEYSTORE_FILE_BASE64 }}" | base64 --decode > src/main/resources/keystore/keystore.p12
+          echo "✅ Production keystore loaded from secrets"
+        else
+          # Создаем тестовый keystore для демонстрации
+          keytool -genkeypair \
+            -alias prod-cert \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 365 \
+            -keystore src/main/resources/keystore/keystore.p12 \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEYSTORE_PASSWORD" \
+            -dname "CN=Production, OU=Support System, O=University, C=RU" \
+            -storetype PKCS12
+          echo "⚠️  Using generated keystore (no KEYSTORE_FILE_BASE64 secret provided)"
+        fi
+        
+        # Проверяем
+        ls -la src/main/resources/keystore/
+    
+    # Шаг 2: Сборка JAR файла
+    - name: Build package
+      run: mvn clean package -DskipTests -B
+      env:
+        KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
+    
+    # Шаг 3: Проверка собранного JAR
+    - name: Validate JAR file
+      run: |
+        JAR_FILE=$(find target -name "*.jar" -type f | head -1)
+        
+        if [ -f "$JAR_FILE" ]; then
+          echo "✅ JAR file created: $(basename $JAR_FILE)"
+          echo "📏 Size: $(du -h "$JAR_FILE" | cut -f1)"
+          
+          # Проверка содержимого
+          echo "📁 JAR structure check:"
+          jar tf "$JAR_FILE" | grep -E "(BOOT-INF|META-INF|com/example)" | head -5
+          
+          # Проверка что это Spring Boot JAR
+          if jar tf "$JAR_FILE" | grep -q "BOOT-INF"; then
+            echo "✅ Spring Boot executable JAR"
+          else
+            echo "⚠️  Not a Spring Boot executable JAR"
+          fi
+        else
+          echo "❌ No JAR file found!"
+          exit 1
+        fi
+    
+    # Шаг 4: Загрузка артефакта в GitHub
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: support-system-jar
+        path: target/*.jar
+        retention-days: 7  # Хранить 7 дней
+    
+    # Шаг 5: Создание GitHub Release (опционально, для версий)
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/v')  # Только для тегов с версиями
+      uses: softprops/action-gh-release@v1
+      with:
+        files: target/*.jar
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    # Шаг 6: Загрузка дополнительных артефактов
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          pom.xml
+          src/main/resources/application.properties
+        retention-days: 30
